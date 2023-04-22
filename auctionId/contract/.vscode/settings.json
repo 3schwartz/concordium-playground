@@ -1,0 +1,11 @@
+{
+    "rust-analyzer.runnables.extraArgs": [
+        "features crypto-primitives"
+    ],
+    "rust-analyzer.rustfmt.extraArgs": [
+        "features crypto-primitives"
+    ],
+    "rust-analyzer.cargo.features": [
+        "crypto-primitives"
+        ]
+}

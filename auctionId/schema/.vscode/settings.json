@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.runnables.extraArgs": [
+        "../dist/base64_schema.b64"
+    ],
+    "rust-analyzer.rustfmt.extraArgs": [
+        "../dist/base64_schema.b64"
+    ]
+}

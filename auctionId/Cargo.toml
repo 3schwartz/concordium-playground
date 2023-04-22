@@ -1,0 +1,3 @@
+[workspace]
+members = ["schema", "generators", "verifier"]
+exclude = ["contract"]

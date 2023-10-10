@@ -1,0 +1,18 @@
+@startuml
+
+participant Victim as victim
+participant Attacker as attacker
+
+loop
+    attacker -> victim #FFBBBB: Call **withdraw**
+    activate victim #FFBBBB
+
+    victim -> attacker: Call **receive**
+    deactivate victim
+
+    |||
+
+    attacker -> attacker: break given \n some condition
+end
+
+@enduml

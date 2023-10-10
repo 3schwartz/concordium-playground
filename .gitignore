@@ -209,3 +209,8 @@ Hardhat/nft-collection/artifacts/*
 ## Concordium
 *.export
 dinasour.json
+
+.DS_Store
+*.jar
+*.png
+concordium-out

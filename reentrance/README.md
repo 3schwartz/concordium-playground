@@ -1,22 +1,32 @@
+# Reentrance example
+
+This project contains example of contracts with reentrance exploit and contracts which mitigates the issue.
+
+## Commands to build and run the project
+
 ```
+# Build schema
 cargo concordium build --schema-template-out -
 
+# Build module
 cargo concordium build --schema-embed --out dist/module.wasm.v1
 
-concordium-client module deploy dist/module.wasm.v1 --sender darth --name reentrance2 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
+# Deploy module
+concordium-client module deploy dist/module.wasm.v1 --sender <ACCOUNT> --name reentrance --grpc-port 20000 --grpc-ip node.testnet.concordium.com
 
-concordium-client contract init reentrance2 --sender darth --contract reentrance --name reentrance2 --energy 2000 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
+# Initialize contracts
+concordium-client contract init reentrance --sender <ACCOUNT> --contract reentrance --name reentrance --energy 2000 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
+concordium-client contract init reentrance --sender <ACCOUNT> --contract attacker --name attacker --energy 2000 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
 
-concordium-client contract init reentrance2 --sender darth --contract attacker --name attacker2 --energy 2000 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
-
-concordium-client contract update reentrance2 --entrypoint deposit --energy 3000 --sender darth --amount 2 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
-
-
-concordium-client contract invoke reentrance2  --entrypoint view --grpc-port 20000 --grpc-ip node.testnet.concordium.com
+# Invoke or update contracts
+concordium-client contract update reentrance --entrypoint deposit --energy 3000 --sender <ACCOUNT> --amount 2 --grpc-port 20000 --grpc-ip node.testnet.concordium.com
+concordium-client contract invoke reentrance --entrypoint view --grpc-port 20000 --grpc-ip node.testnet.concordium.com
 ```
 
+## Energy used
 
-# Energy used
+Energy used by contracts in project. Energy comes from the Concordium integration test framework.
+
 
 | Contract                                  | Energy    |
 |-------------------------------------------|-----------|

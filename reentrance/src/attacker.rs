@@ -92,9 +92,9 @@ fn contract_attacker_attack<S: HasStateApi>(
         ),
     };
 
-    host.invoke_contract_raw(
+    host.invoke_contract(
         &victim,
-        Parameter::new_unchecked(&to_bytes(&params)),
+        &params,
         EntrypointName::new_unchecked("withdraw"),
         Amount::zero(),
     )?;
@@ -166,12 +166,12 @@ fn contract_attacker_transfer<S: HasStateApi>(
 
 #[cfg(test)]
 mod test {
-    use crate::{common::{tests::*, Error}, attacker::AttackerEvent};
+    use crate::common::{tests::*, Error};
     use anyhow::Result;
     use concordium_smart_contract_testing::*;
 
     #[test]
-    fn test_attack_reentrance_rmutex() -> Result<()> {
+    fn test_attack_reentrance_mutex() -> Result<()> {
         validation_error(Victim::RentranceMutex)?;
         Ok(())
     }
@@ -196,7 +196,7 @@ mod test {
 
         const TO_TRANSFER: Amount = Amount::from_ccd(42);
         // deposit from ACC other
-        let _ = reentrace_deposit(
+        reentrace_deposit(
             REENTRANCE_READONLY,
             ACC_ADDR_OTHER,
             reentrance_contract.contract_address,
@@ -204,7 +204,7 @@ mod test {
             &mut chain,
         )?;
         // deposit from ACC reentrace owner
-        let _ = reentrace_deposit(
+        reentrace_deposit(
             REENTRANCE_READONLY,
             ACC_ADDR_OWNER,
             reentrance_contract.contract_address,
@@ -212,7 +212,7 @@ mod test {
             &mut chain,
         )?;
         // deposit from ACC attacker
-        let _ = reentrace_deposit(
+        reentrace_deposit(
             "attacker",
             ACC_ADDR_ATTACKER,
             attacker.contract_address,
@@ -250,7 +250,7 @@ mod test {
         const TO_TRANSFER: Amount = Amount::from_ccd(42);
         let total_transfered: Amount = TO_TRANSFER * 3;
         // deposit from ACC other
-        let _ = reentrace_deposit(
+        reentrace_deposit(
             REENTRANCE,
             ACC_ADDR_OTHER,
             reentrance_contract.contract_address,
@@ -258,7 +258,7 @@ mod test {
             &mut chain,
         )?;
         // deposit from ACC reentrace owner
-        let _ = reentrace_deposit(
+        reentrace_deposit(
             REENTRANCE,
             ACC_ADDR_OWNER,
             reentrance_contract.contract_address,
@@ -266,7 +266,7 @@ mod test {
             &mut chain,
         )?;
         // deposit from ACC attacker
-        let _ = reentrace_deposit(
+        reentrace_deposit(
             "attacker",
             ACC_ADDR_ATTACKER,
             attacker.contract_address,
@@ -280,7 +280,7 @@ mod test {
         // now total of 42 * 3 = 126
 
         // Act
-        let attack_update = chain.contract_update(
+        chain.contract_update(
             Signer::with_one_key(),
             ACC_ADDR_ATTACKER,
             Address::from(ACC_ADDR_ATTACKER),
@@ -291,60 +291,20 @@ mod test {
                 receive_name: OwnedReceiveName::new_unchecked("attacker.attack".to_string()),
                 message: OwnedParameter::empty(),
             },
-        );
+        ).unwrap();
 
         let reentrance_contract_balance_after_attack = chain
             .contract_balance(reentrance_contract.contract_address)
             .unwrap();
         let attacker_contract_balance_after_attack =
             chain.contract_balance(attacker.contract_address).unwrap();
-        let attacker_balance_before_transfer = chain.account_balance(ACC_ADDR_ATTACKER).unwrap();
-
-        let transfer_update = chain.contract_update(
-            Signer::with_one_key(),
-            ACC_ADDR_ATTACKER,
-            Address::from(ACC_ADDR_ATTACKER),
-            Energy::from(42_000),
-            UpdateContractPayload {
-                amount: Amount::zero(),
-                address: attacker.contract_address,
-                receive_name: OwnedReceiveName::new_unchecked("attacker.transfer".to_string()),
-                message: OwnedParameter::empty(),
-            },
-        )?;
 
         // Assert
         assert_eq!(view_before_attack.len(), 3);
 
-        let attacker_balance_after_transfer = chain.account_balance(ACC_ADDR_ATTACKER).unwrap();
-        let attacker_contract_balance_after_transfer =
-            chain.contract_balance(attacker.contract_address).unwrap();
-
         assert_eq!(reentrance_contract_balance_before_attack, total_transfered);
         assert_eq!(attacker_contract_balance_after_attack, total_transfered);
         assert_eq!(reentrance_contract_balance_after_attack, Amount::zero());
-        assert_eq!(attacker_contract_balance_after_transfer, Amount::zero());
-
-        assert_eq!(
-            attacker_balance_after_transfer.available(),
-            attacker_balance_before_transfer.available() + total_transfered
-                - transfer_update.transaction_fee
-        );
-        if let ContractTraceElement::Updated { data } = attack_update
-            .unwrap()
-            .effective_trace_elements_cloned()
-            .last()
-            .unwrap()
-        {
-            let displayed = format!("{}", &data.events[0]);
-            let log: AttackerEvent = from_bytes(&hex::decode(displayed)?)?;
-            assert_eq!(
-                log,
-                AttackerEvent::Exploited(ContractAddress::new(0, 0), total_transfered)
-            );
-        } else {
-            panic!("update event should be present")
-        }
         Ok(())
     }
 

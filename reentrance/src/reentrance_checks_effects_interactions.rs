@@ -47,11 +47,11 @@ fn contract_deposit<S: HasStateApi>(
 ) -> Result<(), Error> {
     let sender = ctx.sender();
     let state = host.state_mut();
-    let mut sender_balance = state
+    state
         .balances
         .entry(sender)
-        .or_insert_with(|| Amount::zero());
-    *sender_balance += amount;
+        .and_modify(|bal| *bal += amount)
+        .or_insert(amount);
 
     Ok(())
 }
@@ -91,6 +91,7 @@ fn contract_withdraw<S: HasStateApi>(
 
     let amount_to_transfer = deposited.to_owned();
 
+    // effects not apply before interactions
     host.state_mut().balances.remove(&address);
 
     match params.receiver {

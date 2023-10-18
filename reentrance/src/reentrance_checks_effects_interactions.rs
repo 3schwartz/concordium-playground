@@ -91,7 +91,7 @@ fn contract_withdraw<S: HasStateApi>(
 
     let amount_to_transfer = deposited.to_owned();
 
-    // effects not apply before interactions
+    // effects now applied before interactions
     host.state_mut().balances.remove(&address);
 
     match params.receiver {

@@ -172,23 +172,23 @@ mod test {
 
     #[test]
     fn test_attack_reentrance_mutex() -> Result<()> {
-        validation_error(Victim::RentranceMutex)?;
+        validation_error(Victim::RentranceMutex, AttackError::Trapped)?;
         Ok(())
     }
 
     #[test]
     fn test_attack_reentrance_readonly() -> Result<()> {
-        validation_error(Victim::ReentranceChecksEffectsInteractions)?;
+        validation_error(Victim::ReentraceReadonly, AttackError::Trapped)?;
         Ok(())
     }
 
     #[test]
     fn test_attack_reentrance_reentrance_checks_effects_interactions() -> Result<()> {
-        validation_error(Victim::ReentranceChecksEffectsInteractions)?;
+        validation_error(Victim::ReentranceChecksEffectsInteractions, AttackError::Custom(Error::NothingDeposited))?;
         Ok(())
     }
 
-    fn validation_error(victim: Victim) -> Result<()> {
+    fn validation_error(victim: Victim, expected_error: AttackError) -> Result<()> {
         // Arrange
         let (mut chain, contracts) = setup_with_victim(victim)?;
         let reentrance_contract = contracts.reentrance;
@@ -235,9 +235,46 @@ mod test {
         );
 
         // Assert
-        assert!(attack_update.is_err());
+        let error = get_error(attack_update.unwrap_err().trace_elements)?;
+        assert_eq!(expected_error, error);
         Ok(())
     }    
+
+    #[derive(Debug, PartialEq)]
+    enum AttackError {
+        Custom(Error),
+        Trapped,
+        None
+    }
+
+    fn get_error(elements: Vec<DebugTraceElement>) -> Result<AttackError> {
+        for trace in elements
+         {
+            match trace {
+                DebugTraceElement::WithFailures { error, trace_elements, .. } => {
+                    if trace_elements.is_empty() || is_all_regular(&trace_elements) {
+                        let result = match error {
+                            InvokeExecutionError::Reject { return_value, .. } => {
+                                AttackError::Custom(from_bytes(&return_value)?)
+                            },
+                            InvokeExecutionError::Trap { .. } => AttackError::Trapped,
+                        };
+                        return Ok(result);
+                    }
+                    return get_error(trace_elements);
+                },
+                _ => ()
+            }
+        }
+        Ok(AttackError::None)
+    }
+
+    fn is_all_regular(trace_elements: &Vec<DebugTraceElement>) -> bool {
+        trace_elements.iter().all(|t| match t {
+            DebugTraceElement::Regular { .. } => true,
+            _ => false
+        })
+    }
 
     #[test]
     fn test_attack_reentrance() -> Result<()> {

@@ -65,11 +65,12 @@ pub mod tests {
     use anyhow::Result;
     use concordium_smart_contract_testing::*;
 
-    use crate::common::{WithdrawParams, Receiver};
+    use crate::common::{Receiver, WithdrawParams};
 
     pub const REENTRANCE: &str = "reentrance";
     pub const REENTRANCE_READONLY: &str = "reentrance_readonly";
-    pub const REENTRANCE_CHECKS_EFFECTS_INTERACTIONS: &str = "reentrance_checks_effects_interactions";
+    pub const REENTRANCE_CHECKS_EFFECTS_INTERACTIONS: &str =
+        "reentrance_checks_effects_interactions";
     pub const REENTRANCE_MUTEX: &str = "reentrance_mutex";
 
     pub const ACC_ADDR_OWNER: AccountAddress = AccountAddress([0u8; 32]);
@@ -97,7 +98,9 @@ pub mod tests {
             match self {
                 Victim::Reentrance => REENTRANCE,
                 Victim::ReentraceReadonly => REENTRANCE_READONLY,
-                Victim::ReentranceChecksEffectsInteractions => REENTRANCE_CHECKS_EFFECTS_INTERACTIONS,
+                Victim::ReentranceChecksEffectsInteractions => {
+                    REENTRANCE_CHECKS_EFFECTS_INTERACTIONS
+                }
                 Victim::RentranceMutex => REENTRANCE_MUTEX,
             }
         }
@@ -147,7 +150,7 @@ pub mod tests {
                 init_name: OwnedContractName::new_unchecked("init_saint".to_string()),
                 param: OwnedParameter::from_serial(&reentrance.contract_address)?,
             },
-        )?;        
+        )?;
 
         return Ok((
             chain,
@@ -173,7 +176,7 @@ pub mod tests {
             UpdateContractPayload {
                 amount: Amount::zero(),
                 address: contract.contract_address,
-                receive_name: OwnedReceiveName::new_unchecked(format!("{}.view", contract_name)),                
+                receive_name: OwnedReceiveName::new_unchecked(format!("{}.view", contract_name)),
                 message: OwnedParameter::empty(),
             },
         )?;
@@ -237,7 +240,10 @@ pub mod tests {
             UpdateContractPayload {
                 amount: Amount::zero(),
                 address: reentrance_contract.contract_address,
-                receive_name: OwnedReceiveName::new_unchecked(format!("{}.withdraw", contract_name)),
+                receive_name: OwnedReceiveName::new_unchecked(format!(
+                    "{}.withdraw",
+                    contract_name
+                )),
                 message: OwnedParameter::from_serial(&params)?,
             },
         )?;
@@ -265,7 +271,7 @@ pub mod tests {
         assert_eq!(view_after.len(), 0);
 
         Ok(())
-    }    
+    }
 
     pub fn reentrance_deposit_validation(victim: Victim) -> Result<()> {
         let (mut chain, contracts) = setup_with_victim(victim)?;

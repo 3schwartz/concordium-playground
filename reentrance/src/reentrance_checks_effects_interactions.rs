@@ -109,11 +109,10 @@ fn contract_withdraw<S: HasStateApi>(
     Ok(())
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::common::tests::*;
-    use anyhow::{Result, Ok};
+    use anyhow::{Ok, Result};
 
     #[test]
     fn test_reentrance_deposit_from_account() -> Result<()> {

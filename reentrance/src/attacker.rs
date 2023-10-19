@@ -184,7 +184,10 @@ mod test {
 
     #[test]
     fn test_attack_reentrance_reentrance_checks_effects_interactions() -> Result<()> {
-        validation_error(Victim::ReentranceChecksEffectsInteractions, AttackError::Custom(Error::NothingDeposited))?;
+        validation_error(
+            Victim::ReentranceChecksEffectsInteractions,
+            AttackError::Custom(Error::NothingDeposited),
+        )?;
         Ok(())
     }
 
@@ -238,32 +241,35 @@ mod test {
         let error = get_error(attack_update.unwrap_err().trace_elements)?;
         assert_eq!(expected_error, error);
         Ok(())
-    }    
+    }
 
     #[derive(Debug, PartialEq)]
     enum AttackError {
         Custom(Error),
         Trapped,
-        None
+        None,
     }
 
     fn get_error(elements: Vec<DebugTraceElement>) -> Result<AttackError> {
-        for trace in elements
-         {
+        for trace in elements {
             match trace {
-                DebugTraceElement::WithFailures { error, trace_elements, .. } => {
+                DebugTraceElement::WithFailures {
+                    error,
+                    trace_elements,
+                    ..
+                } => {
                     if trace_elements.is_empty() || is_all_regular(&trace_elements) {
                         let result = match error {
                             InvokeExecutionError::Reject { return_value, .. } => {
                                 AttackError::Custom(from_bytes(&return_value)?)
-                            },
+                            }
                             InvokeExecutionError::Trap { .. } => AttackError::Trapped,
                         };
                         return Ok(result);
                     }
                     return get_error(trace_elements);
-                },
-                _ => ()
+                }
+                _ => (),
             }
         }
         Ok(AttackError::None)
@@ -272,7 +278,7 @@ mod test {
     fn is_all_regular(trace_elements: &Vec<DebugTraceElement>) -> bool {
         trace_elements.iter().all(|t| match t {
             DebugTraceElement::Regular { .. } => true,
-            _ => false
+            _ => false,
         })
     }
 
@@ -317,18 +323,20 @@ mod test {
         // now total of 42 * 3 = 126
 
         // Act
-        chain.contract_update(
-            Signer::with_one_key(),
-            ACC_ADDR_ATTACKER,
-            Address::from(ACC_ADDR_ATTACKER),
-            Energy::from(42_000),
-            UpdateContractPayload {
-                amount: Amount::zero(),
-                address: attacker.contract_address,
-                receive_name: OwnedReceiveName::new_unchecked("attacker.attack".to_string()),
-                message: OwnedParameter::empty(),
-            },
-        ).unwrap();
+        chain
+            .contract_update(
+                Signer::with_one_key(),
+                ACC_ADDR_ATTACKER,
+                Address::from(ACC_ADDR_ATTACKER),
+                Energy::from(42_000),
+                UpdateContractPayload {
+                    amount: Amount::zero(),
+                    address: attacker.contract_address,
+                    receive_name: OwnedReceiveName::new_unchecked("attacker.attack".to_string()),
+                    message: OwnedParameter::empty(),
+                },
+            )
+            .unwrap();
 
         let reentrance_contract_balance_after_attack = chain
             .contract_balance(reentrance_contract.contract_address)

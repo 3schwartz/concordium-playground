@@ -108,7 +108,6 @@ fn contract_withdraw<S: HasStateApi>(
     Ok(())
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::common::tests::*;
@@ -120,10 +119,9 @@ mod test {
         Ok(())
     }
 
-
     #[test]
     fn test_reentrance_withdraw() -> Result<()> {
         reentrance_withdraw_validation(Victim::ReentraceReadonly)?;
         Ok(())
-    }    
+    }
 }

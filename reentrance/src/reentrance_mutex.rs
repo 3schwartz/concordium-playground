@@ -13,7 +13,8 @@ pub struct State<S: HasStateApi> {
 impl<S: HasStateApi> State<S> {
     fn new(state_builder: &mut StateBuilder<S>) -> Self {
         Self {
-            balances: state_builder.new_map(), lock: false
+            balances: state_builder.new_map(),
+            lock: false,
         }
     }
 
@@ -115,7 +116,6 @@ fn contract_withdraw<S: HasStateApi>(
     Ok(())
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::common::tests::*;
@@ -127,10 +127,9 @@ mod test {
         Ok(())
     }
 
-
     #[test]
     fn test_reentrance_withdraw() -> Result<()> {
         reentrance_withdraw_validation(Victim::RentranceMutex)?;
         Ok(())
-    }    
+    }
 }

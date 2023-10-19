@@ -129,26 +129,25 @@ mod test {
     fn test_receive_reentrance_mutex() -> Result<()> {
         test_reentrance_skeleton(Victim::RentranceMutex)?;
         Ok(())
-    }   
+    }
 
     #[test]
     fn test_receive_reentrance_checks_effects_interactions() -> Result<()> {
         test_reentrance_skeleton(Victim::ReentranceChecksEffectsInteractions)?;
         Ok(())
-    }    
+    }
 
     #[test]
     fn test_receive_reentrance_readonly() -> Result<()> {
         test_reentrance_skeleton(Victim::ReentraceReadonly)?;
         Ok(())
-    }    
+    }
 
     #[test]
     fn test_receive_reentrance() -> Result<()> {
         test_reentrance_skeleton(Victim::Reentrance)?;
         Ok(())
     }
-
 
     fn test_reentrance_skeleton(victim: Victim) -> Result<()> {
         let (mut chain, contracts) = setup_with_victim(victim)?;
@@ -218,7 +217,11 @@ mod test {
             saint_balance_before_transfer.available() + TO_TRANSFER
                 - transfer_update.transaction_fee
         );
-        println!("Energy used withdraw - {} - {}", contract_name, withdraw_update.energy_used);
-        Ok(())        
+        // This is only used later to get the energy used.
+        println!(
+            "Energy used withdraw - {} - {}",
+            contract_name, withdraw_update.energy_used
+        );
+        Ok(())
     }
 }

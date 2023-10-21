@@ -28,9 +28,9 @@ impl AttackerState {
     parameter = "ContractAddress",
     error = "Error"
 )]
-fn contract_attacker_init<S: HasStateApi>(
-    ctx: &impl HasInitContext,
-    _state_builder: &mut StateBuilder<S>,
+fn contract_attacker_init(
+    ctx: &InitContext,
+    _state_builder: &mut StateBuilder,
 ) -> InitResult<AttackerState> {
     let victim: ContractAddress = ctx.parameter_cursor().get()?;
     let state = AttackerState::new(victim);
@@ -44,9 +44,9 @@ fn contract_attacker_init<S: HasStateApi>(
     mutable,
     payable
 )]
-fn contract_attacker_deposit<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<AttackerState, StateApiType = S>,
+fn contract_attacker_deposit(
+    ctx: &ReceiveContext,
+    host: &mut Host<AttackerState>,
     amount: Amount,
 ) -> Result<(), Error> {
     ensure!(
@@ -73,10 +73,10 @@ fn contract_attacker_deposit<S: HasStateApi>(
     enable_logger,
     mutable
 )]
-fn contract_attacker_attack<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<AttackerState, StateApiType = S>,
-    logger: &mut impl HasLogger,
+fn contract_attacker_attack(
+    ctx: &ReceiveContext,
+    host: &mut Host<AttackerState>,
+    logger: &mut Logger,
 ) -> Result<(), Error> {
     ensure!(
         ctx.sender().matches_account(&ctx.owner()),
@@ -113,9 +113,9 @@ fn contract_attacker_attack<S: HasStateApi>(
     mutable,
     payable
 )]
-fn contract_attacker_receive<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<AttackerState, StateApiType = S>,
+fn contract_attacker_receive(
+    ctx: &ReceiveContext,
+    host: &mut Host<AttackerState>,
     _amount: Amount,
 ) -> Result<(), Error> {
     ensure!(
@@ -150,9 +150,9 @@ fn contract_attacker_receive<S: HasStateApi>(
     error = "Error",
     mutable
 )]
-fn contract_attacker_transfer<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<AttackerState, StateApiType = S>,
+fn contract_attacker_transfer(
+    ctx: &ReceiveContext,
+    host: &mut Host<AttackerState>,
 ) -> Result<(), Error> {
     ensure!(
         ctx.sender().matches_account(&ctx.owner()),

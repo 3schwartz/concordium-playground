@@ -5,13 +5,13 @@ use crate::common::{Error, Receiver, WithdrawParams};
 
 #[derive(DeserialWithState, Serial)]
 #[concordium(state_parameter = "S")]
-pub struct State<S: HasStateApi> {
+pub struct State<S = StateApi> {
     balances: StateMap<Address, Amount, S>,
     lock: bool,
 }
 
-impl<S: HasStateApi> State<S> {
-    fn new(state_builder: &mut StateBuilder<S>) -> Self {
+impl State {
+    fn new(state_builder: &mut StateBuilder) -> Self {
         Self {
             balances: state_builder.new_map(),
             lock: false,
@@ -27,10 +27,10 @@ impl<S: HasStateApi> State<S> {
 }
 
 #[init(contract = "reentrance_mutex", parameter = "()")]
-fn init<S: HasStateApi>(
+fn init(
     _ctx: &impl HasInitContext,
-    state_builder: &mut StateBuilder<S>,
-) -> InitResult<State<S>> {
+    state_builder: &mut StateBuilder,
+) -> InitResult<State> {
     let state = State::new(state_builder);
     Ok(state)
 }
@@ -42,9 +42,9 @@ fn init<S: HasStateApi>(
     mutable,
     payable
 )]
-fn contract_deposit<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<State<S>, StateApiType = S>,
+fn contract_deposit(
+    ctx: &ReceiveContext,
+    host: &mut Host<State>,
     amount: Amount,
 ) -> Result<(), Error> {
     let sender = ctx.sender();
@@ -64,9 +64,9 @@ fn contract_deposit<S: HasStateApi>(
     parameter = "()",
     return_value = "Vec<(Address, Amount)>"
 )]
-fn contract_view<S: HasStateApi>(
-    _ctx: &impl HasReceiveContext,
-    host: &impl HasHost<State<S>, StateApiType = S>,
+fn contract_view(
+    _ctx: &ReceiveContext,
+    host: &Host<State>
 ) -> Result<Vec<(Address, Amount)>, Error> {
     Ok(host.state().get_view())
 }
@@ -78,9 +78,9 @@ fn contract_view<S: HasStateApi>(
     error = "Error",
     mutable
 )]
-fn contract_withdraw<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<State<S>, StateApiType = S>,
+fn contract_withdraw(
+    ctx: &ReceiveContext,
+    host: &mut Host<State>,
 ) -> Result<(), Error> {
     ensure!(!host.state().lock, Error::LockError);
 

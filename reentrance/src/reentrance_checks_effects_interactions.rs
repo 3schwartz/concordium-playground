@@ -5,12 +5,12 @@ use crate::common::{Error, Receiver, WithdrawParams};
 
 #[derive(DeserialWithState, Serial)]
 #[concordium(state_parameter = "S")]
-pub struct State<S: HasStateApi> {
+pub struct State<S = StateApi> {
     balances: StateMap<Address, Amount, S>,
 }
 
-impl<S: HasStateApi> State<S> {
-    fn new(state_builder: &mut StateBuilder<S>) -> Self {
+impl State {
+    fn new(state_builder: &mut StateBuilder) -> Self {
         Self {
             balances: state_builder.new_map(),
         }
@@ -25,10 +25,10 @@ impl<S: HasStateApi> State<S> {
 }
 
 #[init(contract = "reentrance_checks_effects_interactions", parameter = "()")]
-fn init<S: HasStateApi>(
-    _ctx: &impl HasInitContext,
-    state_builder: &mut StateBuilder<S>,
-) -> InitResult<State<S>> {
+fn init(
+    _ctx: &InitContext,
+    state_builder: &mut StateBuilder,
+) -> InitResult<State> {
     let state = State::new(state_builder);
     Ok(state)
 }
@@ -40,9 +40,9 @@ fn init<S: HasStateApi>(
     mutable,
     payable
 )]
-fn contract_deposit<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<State<S>, StateApiType = S>,
+fn contract_deposit(
+    ctx: &ReceiveContext,
+    host: &mut Host<State>,
     amount: Amount,
 ) -> Result<(), Error> {
     let sender = ctx.sender();
@@ -62,9 +62,9 @@ fn contract_deposit<S: HasStateApi>(
     parameter = "()",
     return_value = "Vec<(Address, Amount)>"
 )]
-fn contract_view<S: HasStateApi>(
-    _ctx: &impl HasReceiveContext,
-    host: &impl HasHost<State<S>, StateApiType = S>,
+fn contract_view(
+    _ctx: &ReceiveContext,
+    host: &Host<State>,
 ) -> Result<Vec<(Address, Amount)>, Error> {
     Ok(host.state().get_view())
 }
@@ -76,9 +76,9 @@ fn contract_view<S: HasStateApi>(
     error = "Error",
     mutable
 )]
-fn contract_withdraw<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<State<S>, StateApiType = S>,
+fn contract_withdraw(
+    ctx: &ReceiveContext,
+    host: &mut Host<State>,
 ) -> Result<(), Error> {
     let params: WithdrawParams = ctx.parameter_cursor().get()?;
     let state = host.state();

@@ -9,9 +9,9 @@ pub struct SaintState {
 }
 
 #[init(contract = "saint", parameter = "ContractAddress")]
-fn contract_saint<S: HasStateApi>(
-    ctx: &impl HasInitContext,
-    _state_builder: &mut StateBuilder<S>,
+fn contract_saint(
+    ctx: &InitContext,
+    _state_builder: &mut StateBuilder,
 ) -> InitResult<SaintState> {
     let other: ContractAddress = ctx.parameter_cursor().get()?;
     Ok(SaintState { other })
@@ -24,9 +24,9 @@ fn contract_saint<S: HasStateApi>(
     mutable,
     payable
 )]
-fn contract_saint_deposit<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<SaintState, StateApiType = S>,
+fn contract_saint_deposit(
+    ctx: &ReceiveContext,
+    host: &mut Host<SaintState>,
     amount: Amount,
 ) -> Result<(), Error> {
     ensure!(
@@ -51,9 +51,9 @@ fn contract_saint_deposit<S: HasStateApi>(
     error = "Error",
     mutable
 )]
-fn contract_saint_attack<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<SaintState, StateApiType = S>,
+fn contract_saint_attack(
+    ctx: &ReceiveContext,
+    host: &mut Host<SaintState>,
 ) -> Result<(), Error> {
     ensure!(
         ctx.sender().matches_account(&ctx.owner()),
@@ -85,9 +85,9 @@ fn contract_saint_attack<S: HasStateApi>(
     mutable,
     payable
 )]
-fn contract_saint_receive<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<SaintState, StateApiType = S>,
+fn contract_saint_receive(
+    ctx: &ReceiveContext,
+    host: &mut Host<SaintState>,
     _amount: Amount,
 ) -> Result<(), Error> {
     ensure!(
@@ -105,9 +105,9 @@ fn contract_saint_receive<S: HasStateApi>(
     error = "Error",
     mutable
 )]
-fn contract_saint_transfer<S: HasStateApi>(
-    ctx: &impl HasReceiveContext,
-    host: &mut impl HasHost<SaintState, StateApiType = S>,
+fn contract_saint_transfer(
+    ctx: &ReceiveContext,
+    host: &mut Host<SaintState>,
 ) -> Result<(), Error> {
     ensure!(
         ctx.sender().matches_account(&ctx.owner()),

@@ -1,0 +1,42 @@
+name: Build and test
+
+on:
+  push:
+    branches: main
+
+  pull_request:
+    branches: main
+
+  workflow_dispatch:
+
+env:
+  RUST_VERSION: "1.65"
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir:
+          - 'reentrance'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          components: rustfmt
+      
+      - name: Format
+        working-directory: ${{ matrix.dir }}
+        run: |
+          cargo fmt -- --color=always --check
+
+      - name: Test
+        working-directory: ${{ matrix.dir }}
+        run: cargo test --release
+

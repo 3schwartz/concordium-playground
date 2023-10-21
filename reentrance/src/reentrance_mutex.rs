@@ -27,10 +27,7 @@ impl State {
 }
 
 #[init(contract = "reentrance_mutex", parameter = "()")]
-fn init(
-    _ctx: &impl HasInitContext,
-    state_builder: &mut StateBuilder,
-) -> InitResult<State> {
+fn init(_ctx: &impl HasInitContext, state_builder: &mut StateBuilder) -> InitResult<State> {
     let state = State::new(state_builder);
     Ok(state)
 }
@@ -66,7 +63,7 @@ fn contract_deposit(
 )]
 fn contract_view(
     _ctx: &ReceiveContext,
-    host: &Host<State>
+    host: &Host<State>,
 ) -> Result<Vec<(Address, Amount)>, Error> {
     Ok(host.state().get_view())
 }
@@ -78,10 +75,7 @@ fn contract_view(
     error = "Error",
     mutable
 )]
-fn contract_withdraw(
-    ctx: &ReceiveContext,
-    host: &mut Host<State>,
-) -> Result<(), Error> {
+fn contract_withdraw(ctx: &ReceiveContext, host: &mut Host<State>) -> Result<(), Error> {
     ensure!(!host.state().lock, Error::LockError);
 
     let params: WithdrawParams = ctx.parameter_cursor().get()?;

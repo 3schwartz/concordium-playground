@@ -35,8 +35,16 @@ jobs:
         working-directory: ${{ matrix.dir }}
         run: |
           cargo fmt -- --color=always --check
+      
+      - name: Install Wasm targer
+        run: |
+          rustup target add wasm32-unknown-unknown
+      
+      - name: Install cargo concordium
+        run: |
+          cargo install --locked cargo-concordium --version 3.0.0
 
       - name: Test
         working-directory: ${{ matrix.dir }}
-        run: cargo test --release
+        run: cargo concordium test --out concordium-out/module.wasm.v1
 

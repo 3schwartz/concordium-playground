@@ -9,10 +9,7 @@ pub struct SaintState {
 }
 
 #[init(contract = "saint", parameter = "ContractAddress")]
-fn contract_saint(
-    ctx: &InitContext,
-    _state_builder: &mut StateBuilder,
-) -> InitResult<SaintState> {
+fn contract_saint(ctx: &InitContext, _state_builder: &mut StateBuilder) -> InitResult<SaintState> {
     let other: ContractAddress = ctx.parameter_cursor().get()?;
     Ok(SaintState { other })
 }
@@ -51,10 +48,7 @@ fn contract_saint_deposit(
     error = "Error",
     mutable
 )]
-fn contract_saint_attack(
-    ctx: &ReceiveContext,
-    host: &mut Host<SaintState>,
-) -> Result<(), Error> {
+fn contract_saint_attack(ctx: &ReceiveContext, host: &mut Host<SaintState>) -> Result<(), Error> {
     ensure!(
         ctx.sender().matches_account(&ctx.owner()),
         Error::OwnerError
@@ -105,10 +99,7 @@ fn contract_saint_receive(
     error = "Error",
     mutable
 )]
-fn contract_saint_transfer(
-    ctx: &ReceiveContext,
-    host: &mut Host<SaintState>,
-) -> Result<(), Error> {
+fn contract_saint_transfer(ctx: &ReceiveContext, host: &mut Host<SaintState>) -> Result<(), Error> {
     ensure!(
         ctx.sender().matches_account(&ctx.owner()),
         Error::OwnerError

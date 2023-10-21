@@ -25,10 +25,7 @@ impl State {
 }
 
 #[init(contract = "reentrance", parameter = "()")]
-fn init(
-    _ctx: &InitContext,
-    state_builder: &mut StateBuilder,
-) -> InitResult<State> {
+fn init(_ctx: &InitContext, state_builder: &mut StateBuilder) -> InitResult<State> {
     let state = State::new(state_builder);
     Ok(state)
 }
@@ -56,11 +53,11 @@ fn contract_deposit(
     Ok(())
 }
 
-/// Note: Instead of returning everything, consider providing a 
-/// view entrypoint that takes a list of addresses as a 
+/// Note: Instead of returning everything, consider providing a
+/// view entrypoint that takes a list of addresses as a
 /// parameter.
-/// 
-/// As the contract grows, calling this query from another 
+///
+/// As the contract grows, calling this query from another
 /// contract will become increasingly expensive.
 #[receive(
     contract = "reentrance",
@@ -82,10 +79,7 @@ fn contract_view(
     error = "Error",
     mutable
 )]
-fn contract_withdraw(
-    ctx: &ReceiveContext,
-    host: &mut Host<State>,
-) -> Result<(), Error> {
+fn contract_withdraw(ctx: &ReceiveContext, host: &mut Host<State>) -> Result<(), Error> {
     let params: WithdrawParams = ctx.parameter_cursor().get()?;
     let state = host.state();
     let address = params.get_address();

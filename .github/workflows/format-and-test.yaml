@@ -29,6 +29,7 @@ jobs:
           profile: minimal
           toolchain: ${{ env.RUST_VERSION }}
           override: true
+          components: rustfmt
       
       - name: Format
         working-directory: ${{ matrix.dir }}

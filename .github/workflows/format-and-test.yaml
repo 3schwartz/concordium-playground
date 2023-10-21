@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  RUST_VERSION: "1.65"
+  RUST_VERSION: "1.68"
 
 jobs:
   fmt:
@@ -36,7 +36,7 @@ jobs:
         run: |
           cargo fmt -- --color=always --check
       
-      - name: Install Wasm targer
+      - name: Install Wasm target
         run: |
           rustup target add wasm32-unknown-unknown
       
